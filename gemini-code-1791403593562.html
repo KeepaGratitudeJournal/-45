@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>煩惱垃圾桶 - 丟掉煩惱換好心情</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background-color: #F0F4F8;
+      color: #2D3748;
+      margin: 0;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      background: #FFFFFF;
+      border-radius: 24px;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .title {
+      font-size: 26px;
+      font-weight: bold;
+      color: #2C7A7B;
+      margin: 6px 0 12px 0;
+    }
+    .sub-guide {
+      font-size: 18px;
+      color: #4A5568;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    /* 便條紙樣式 */
+    .note-paper {
+      background: #FEFCBF;
+      border: 1px solid #FAF089;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 2px 4px 10px rgba(0,0,0,0.08);
+      margin-bottom: 18px;
+    }
+    textarea {
+      width: 100%;
+      height: 120px;
+      background: transparent;
+      border: none;
+      font-size: 19px;
+      line-height: 1.6;
+      color: #2D3748;
+      font-family: inherit;
+      resize: none;
+      outline: none;
+    }
+    .btn-crumple {
+      background: #E2E8F0;
+      color: #2D3748;
+      font-size: 19px;
+      font-weight: bold;
+      border: 1px solid #CBD5E0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.2s;
+    }
+    .btn-crumple:active {
+      background: #CBD5E0;
+    }
+    /* 丟垃圾遊戲舞台 */
+    #stage {
+      display: none;
+      height: 270px;
+      position: relative;
+      margin: 10px 0;
+    }
+    .paper-ball {
+      width: 68px;
+      height: 68px;
+      background: #EDF2F7;
+      border: 2px dashed #718096;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+      position: absolute;
+      left: calc(50% - 34px);
+      top: 15px;
+      cursor: pointer;
+      animation: pulse 1.6s infinite;
+      user-select: none;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .trash-bin {
+      font-size: 78px;
+      position: absolute;
+      bottom: 15px;
+      left: calc(50% - 39px);
+      transition: transform 0.25s ease;
+      user-select: none;
+    }
+    .bin-label {
+      position: absolute;
+      bottom: 0px;
+      width: 100%;
+      left: 0;
+      font-size: 16px;
+      font-weight: bold;
+      color: #718096;
+    }
+    /* 丟入動畫 */
+    .fly-into-bin {
+      animation: throwFly 0.75s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    @keyframes throwFly {
+      0% { top: 15px; transform: scale(1) rotate(0deg); opacity: 1; }
+      50% { top: 70px; transform: scale(0.8) rotate(180deg); }
+      100% { top: 180px; transform: scale(0.15) rotate(360deg); opacity: 0; }
+    }
+    /* 等待提示 */
+    .loading-hint {
+      display: none;
+      font-size: 19px;
+      color: #2C7A7B;
+      font-weight: bold;
+      line-height: 1.6;
+      margin: 30px 0;
+    }
+    /* 結果卡片 */
+    .result-box {
+      display: none;
+      background: #FFFAF0;
+      border: 2px solid #FEEBC8;
+      border-radius: 18px;
+      padding: 20px 16px;
+      text-align: left;
+      margin-top: 10px;
+    }
+    .result-title {
+      font-size: 21px;
+      font-weight: bold;
+      color: #C05621;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .result-content {
+      font-size: 20px;
+      line-height: 1.7;
+      color: #2D3748;
+      margin-bottom: 18px;
+    }
+    .btn-speak {
+      background: #ED8936;
+      color: #FFFFFF;
+      border: none;
+      border-radius: 12px;
+      padding: 13px;
+      font-size: 18px;
+      font-weight: bold;
+      width: 100%;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-speak:active {
+      background: #DD6B20;
+    }
+    .btn-restart {
+      background: transparent;
+      border: none;
+      color: #718096;
+      font-size: 16px;
+      text-decoration: underline;
+      margin-top: 14px;
+      cursor: pointer;
+      width: 100%;
+      padding: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="title">🗑️ 煩惱垃圾桶</div>
+  
+  <!-- 輸入便條紙 -->
+  <div id="input-section">
+    <div class="sub-guide">
+      在便條紙上寫下最近讓您掛心的一件事：
+    </div>
+    <div class="note-paper">
+      <textarea id="worryText" placeholder="點這裡輸入煩惱，也可以按手機鍵盤上的麥克風用說的..."></textarea>
+    </div>
+    <button class="btn-crumple" onclick="crumplePaper()">把這件煩惱揉成紙團 ➔</button>
+  </div>
+
+  <!-- 丟垃圾遊戲區域 -->
+  <div id="stage">
+    <div class="sub-guide" style="color: #C53030; font-weight: bold;">
+      👇 點一下紙團，把它丟進垃圾桶！
+    </div>
+    <div class="paper-ball" id="paperBall" onclick="throwBall()">📄</div>
+    <div class="trash-bin" id="trashBin">🗑️</div>
+    <div class="bin-label">煩惱垃圾桶</div>
+  </div>
+
+  <!-- 讀取狀態 -->
+  <div class="loading-hint" id="loadingHint">
+    ✨ 煩惱已丟棄！<br>幸福助教正在用心換角度思考中...
+  </div>
+
+  <!-- 轉念回饋區域 -->
+  <div class="result-box" id="resultBox">
+    <div class="result-title">🌱 幸福助教的溫暖發現：</div>
+    <div class="result-content" id="resultText"></div>
+    <button class="btn-speak" onclick="speakResult()">🔊 唸給我聽</button>
+    <button class="btn-restart" onclick="resetGame()">再丟一個煩惱</button>
+  </div>
+</div>
+
+<script>
+  const MAKE_WEBHOOK_URL = "https://hook.us2.make.com/7wxnbesiobyqaem7osni2q61m1zpe44i";
+  let savedWorry = "";
+
+  function crumplePaper() {
+    const text = document.getElementById('worryText').value.trim();
+    if (!text) {
+      alert("請先在便條紙上寫下一件小煩惱喔！");
+      return;
+    }
+    savedWorry = text;
+
+    document.getElementById('input-section').style.display = 'none';
+    document.getElementById('stage').style.display = 'block';
+  }
+
+  function throwBall() {
+    const ball = document.getElementById('paperBall');
+    const bin = document.getElementById('trashBin');
+
+    // 播放丟紙團拋物線動畫
+    ball.classList.add('fly-into-bin');
+
+    setTimeout(() => {
+      bin.style.transform = 'scale(1.25)';
+    }, 450);
+
+    setTimeout(() => {
+      bin.style.transform = 'scale(1)';
+      document.getElementById('stage').style.display = 'none';
+      document.getElementById('loadingHint').style.display = 'block';
+
+      requestReframing(savedWorry);
+    }, 750);
+  }
+
+  async function requestReframing(text) {
+    const resultBox = document.getElementById('resultBox');
+    const resultText = document.getElementById('resultText');
+    const loadingHint = document.getElementById('loadingHint');
+
+    try {
+      const response = await fetch(MAKE_WEBHOOK_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text })
+      });
+
+      const raw = await response.text();
+      let answer = "";
+
+      // 相容 JSON 格式或純文字回傳
+      try {
+        const json = JSON.parse(raw);
+        answer = json.reply || raw;
+      } catch (e) {
+        answer = raw;
+      }
+
+      if (answer && answer.trim()) {
+        resultText.innerText = answer.trim();
+      } else {
+        throw new Error("回傳內容為空");
+      }
+    } catch (err) {
+      console.warn("無法取得線上回應，啟用在地備援回覆:", err);
+      resultText.innerText = `大哥/大姐，看到您把「${text}」丟進垃圾桶，真的很為您高興！很多時候事情已經過去了，換個角度看，您今天願意把它勇敢放下，就是最棒的生活智慧。深呼吸一下，把好心情留給現在吧！`;
+    } finally {
+      loadingHint.style.display = 'none';
+      resultBox.style.display = 'block';
+    }
+  }
+
+  function speakResult() {
+    const text = document.getElementById('resultText').innerText;
+    if ('speechSynthesis' in window && text) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'zh-TW';
+      utter.rate = 0.85;
+      window.speechSynthesis.speak(utter);
+    } else {
+      alert("您的手機瀏覽器暫不支援語音朗讀功能。");
+    }
+  }
+
+  function resetGame() {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    document.getElementById('worryText').value = '';
+    document.getElementById('resultBox').style.display = 'none';
+    const ball = document.getElementById('paperBall');
+    ball.classList.remove('fly-into-bin');
+    document.getElementById('input-section').style.display = 'block';
+  }
+</script>
+</body>
+</html>
